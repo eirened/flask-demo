@@ -3,10 +3,11 @@ import sys
 import requests
 import datetime
 from bokeh.layouts import gridplot
+from bokeh.models import DatetimeTicker,DaysTicker
 from bokeh.plotting import figure, show, output_file
 from bokeh.embed import components
 import pandas as pd
-from math import pi
+from math import pi,ceil
 
 app = Flask(__name__)
 
@@ -51,13 +52,44 @@ def getPlot(stock_name,ticked_boxes):
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
     p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=stock_name + " Prices")
+
     p.xaxis.major_label_orientation = pi / 4
-    p.xaxis.axis_label = "Date"
+    p.xaxis.axis_label = "Date (month/day)"
+    p.xaxis.axis_label_text_font_size = "14pt"
+    p.xaxis.major_label_text_font = "12pt"
     p.yaxis.axis_label = "Stock Price (USD)"
-    colors=['blue','red','purple','black']
-    legend={'close':'Closing','open':'Opening','adj_open':'Adjusted Opening','adj_close':'Adjusted Closing'}
+    p.yaxis.axis_label_text_font_size = "14pt"
+    p.yaxis.major_label_text_font = "12pt"
+
+    if all(feature in ["low","high","close","open"] for feature in ticked_boxes) and len(ticked_boxes)==4:
+        #candlestick plot
+        mids = (pddata.open + pddata.close) / 2
+        spans = abs(pddata.close - pddata.open)
+
+        inc = pddata.close > pddata.open
+        dec = pddata.open > pddata.close
+        w = 12 * 60 * 60 * 1000  # half day in ms
+
+        #p = figure(x_axis_type="datetime", plot_width=800, plot_height=500, title=" Candlestick")
+        #p.xaxis.major_label_orientation = pi / 4
+        p.grid.grid_line_alpha = 0.3
+
+        p.segment(pddata.index, pddata.high, pddata.index, pddata.low, color='black')
+        p.rect(pddata.index[inc], mids[inc], w, spans[inc], fill_color="#D5E1DD", line_color="black")
+        p.rect(pddata.index[dec], mids[dec], w, spans[dec], fill_color="#F2583E", line_color="black")
+
+        script, div = components(p)
+        return (div, script)
+
+
+
+    p.xaxis.ticker = DatetimeTicker(desired_num_ticks=6)
+    #p.xaxis[0].ticker=DaysTicker(interval=3)
+    colors=['blue','red','purple','black','green','orange']
+    legend={'close':'Closing','open':'Opening','adj_open':'Adjusted Opening','adj_close':'Adjusted Closing','low':'Lowest','high':'Highest'}
     for index,feature in enumerate(ticked_boxes):
         p.line(pddata.index, pddata[feature], line_color=colors[index],line_width=2,legend=legend[feature])
+        p.circle(pddata.index, pddata[feature], line_color=colors[index],fill_color=colors[index],size=5)
     script, div=components(p)
     return (div,script)
 
