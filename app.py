@@ -50,12 +50,14 @@ def getPlot(stock_name,ticked_boxes):
     pddata = pd.DataFrame([d[1:] for d in data], [pd.to_datetime(d[0]) for d in data], columns=ticked_boxes)
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=stock_name + " values")
+    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=stock_name + " Prices")
     p.xaxis.major_label_orientation = pi / 4
     p.xaxis.axis_label = "Date"
-    p.yaxis.axis_label = "Opening stock price"
-
-    p.line(pddata.index, pddata.open, color="#D5E1DD", line_color="darkblue")
+    p.yaxis.axis_label = "Stock Price (USD)"
+    colors=['blue','red','purple','black']
+    legend={'close':'Closing','open':'Opening','adj_open':'Adjusted Opening','adj_close':'Adjusted Closing'}
+    for index,feature in enumerate(ticked_boxes):
+        p.line(pddata.index, pddata[feature], line_color=colors[index],line_width=2,legend=legend[feature])
     script, div=components(p)
     return (div,script)
 
