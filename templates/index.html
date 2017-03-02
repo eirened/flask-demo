@@ -13,7 +13,9 @@
   			<div class=metanav>
 
     			<h4>Please enter a stock ticker eg. GOOG, and check desired features.</h4>
-
+				{% if error %}
+				<div class="alert alert-danger" role="alert">{{error}}</div>
+				{%endif%}
     			<form id='input' method='post' action='index'>
 	  			<p>
 					Ticker symbol: <input type='text' name='ticker' />

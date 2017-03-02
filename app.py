@@ -22,7 +22,24 @@ def index():
         #FIXME to check if at least one checkbox was ticked
         stock_name=request.form['ticker'].upper()
         ticked_boxes=request.form.getlist('features')
+        if len(ticked_boxes)==0:
+            error="Please select at least one feature to be displayed."
+            return render_template('index.html',error=error)
         #getPlot(stock_name,ticked_boxes)
+        #check if stock ticker exists
+        today = datetime.date.today()
+        first = today.replace(day=1)
+        lastMonthEnd = first - datetime.timedelta(days=1)
+        lastMonthStart = lastMonthEnd.replace(day=1)
+        sys.stderr.write(','.join(map(str, ticked_boxes)))
+        r = requests.get(
+            "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=%s&date.gte=%s&date.lte=%s&qopts.columns=date,%s&api_key=yFrECJyVKjZh4z--h7xq" % (
+            stock_name, lastMonthStart.strftime("%y%m%d"), lastMonthEnd.strftime("%y%m%d"),
+            ','.join(map(str, ticked_boxes))))
+        data = r.json()['datatable']['data']
+        sys.stderr.write("DATA"+str(data))
+        if len(data)==0:
+            return render_template('index.html',error='Stock data for the given dates not found. Please check the spelling of the stock ticker. If it is correct, it means no data exists for the past month.')
         (div,script)=getPlot(stock_name, ticked_boxes)
         return render_template('graph.html',stock_name=stock_name,div=div,script=script)
         #else:
@@ -45,7 +62,6 @@ def getPlot(stock_name,ticked_boxes):
     sys.stderr.write(','.join(map(str,ticked_boxes)))
     r=requests.get("https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=%s&date.gte=%s&date.lte=%s&qopts.columns=date,%s&api_key=yFrECJyVKjZh4z--h7xq"%(stock_name,lastMonthStart.strftime("%y%m%d"),lastMonthEnd.strftime("%y%m%d"),','.join(map(str,ticked_boxes))))
     data=r.json()['datatable']['data']
-
     columns = list(ticked_boxes)
     columns.insert(0, 'date')
     pddata = pd.DataFrame([d[1:] for d in data], [pd.to_datetime(d[0]) for d in data], columns=ticked_boxes)
