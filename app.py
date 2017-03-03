@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect,send_from_directory
 import sys
 import requests
 import datetime
@@ -24,6 +24,9 @@ def index():
         if len(ticked_boxes)==0:
             error="Please select at least one feature to be displayed."
             return render_template('index.html',error=error)
+        if len(stock_name)==0:
+            error = "Please enter a stock ticker."
+            return render_template('index.html', error=error)
         #getPlot(stock_name,ticked_boxes)
         #check if stock ticker exists
         if not isStockTickerValid(stock_name):
@@ -111,6 +114,22 @@ def candlestick(stock_name):
         return redirect('/index')
     div,script=getPlot(stock_name,["low","high","close","open"])
     return render_template('graph.html', stock_name=stock_name, div=div, script=script)
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('js', path)
+
+@app.route('/img/<path:path>')
+def send_img(path):
+    return send_from_directory('img', path)
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('css', path)
+
+@app.route('/font-awesome/<path:path>')
+def send_font_awesome(path):
+    return send_from_directory('font-awesome', path)
 
 
 if __name__ == '__main__':

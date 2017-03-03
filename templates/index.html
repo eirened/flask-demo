@@ -1,38 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Stock Ticker</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	</head>
-	<body>
-		<div class=page>
-  			<h1>User Input</h1>
-  			<div class=metanav>
 
-    			<h4>Please enter a stock ticker eg. GOOG, and check desired features.</h4>
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Stock graphs</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/stylish-portfolio.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="top" class="header">
+        <div class="text-vertical-center">
+            <h1>Stock graphs</h1>
 				{% if error %}
 				<div class="alert alert-danger" role="alert">{{error}}</div>
 				{%endif%}
-    			<form id='input' method='post' action='index'>
-	  			<p>
-					Ticker symbol: <input type='text' name='ticker' />
-	  			</p>
-	  			<p>
-					<input type="checkbox" name='features' value='close'>Closing price<br>
-					<input type="checkbox" name='features' value='adj_close'>Adjusted closing price<br>
-					<input type="checkbox" name='features' value='open'>Opening price<br>
-					<input type="checkbox" name='features' value='adj_open'>Adjusted opening price<br>
-					<input type="checkbox" name='features' value='high'>Highest price<br>
-					<input type="checkbox" name='features' value='low'>Lowest price<br>
-	    			<input type="submit" value="Submit">
-	  			</p>
-				<h4>Note: Select closing, opening, high, and low to get a candlestick plot</h4>
-				</form>
+            <p>
+            <form id=myform action="/index" method="post">
+              Ticker symbol (e.g. AAPL, GOOG, etc.): <input type="text" placeholder="AAPL" name="ticker">
+              <br/>
+              <p>
+              <input type="checkbox" name='features' value='close'>Closing price  &nbsp;&nbsp;&nbsp; 
+              <input type="checkbox" name='features' value='adj_close'>Adjusted closing price  &nbsp;&nbsp;&nbsp;
+              <input type="checkbox" name='features' value='open'>Opening price  &nbsp;&nbsp;&nbsp; 
+              <input type="checkbox" name='features' value='adj_open'>Adjusted opening price  &nbsp;&nbsp;&nbsp; 
+              <input type="checkbox" name='features' value='high'>Highest price  &nbsp;&nbsp;&nbsp; 
+              <input type="checkbox" name='features' value='low'>Lowest price
+              </p>
+              <h4>Note: Select closing, opening, high, and low to get a candlestick plot</h4>
 
-  			</div>
-		</div>
-	</body>
+            </form>
+            <br>
+            <a href="#" onclick="document.getElementById('myform').submit()" class="btn btn-dark btn-lg">Graph!</a>
+            </form>
+            </p>
+        </div>
+    </header>
+</body>
 </html>
