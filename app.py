@@ -19,7 +19,6 @@ def main():
 def index():
     error = None
     if request.method == 'POST':
-        #FIXME to check if at least one checkbox was ticked
         stock_name=request.form['ticker'].upper()
         ticked_boxes=request.form.getlist('features')
         if len(ticked_boxes)==0:
@@ -27,18 +26,7 @@ def index():
             return render_template('index.html',error=error)
         #getPlot(stock_name,ticked_boxes)
         #check if stock ticker exists
-        today = datetime.date.today()
-        first = today.replace(day=1)
-        lastMonthEnd = first - datetime.timedelta(days=1)
-        lastMonthStart = lastMonthEnd.replace(day=1)
-        sys.stderr.write(','.join(map(str, ticked_boxes)))
-        r = requests.get(
-            "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=%s&date.gte=%s&date.lte=%s&qopts.columns=date,%s&api_key=yFrECJyVKjZh4z--h7xq" % (
-            stock_name, lastMonthStart.strftime("%y%m%d"), lastMonthEnd.strftime("%y%m%d"),
-            ','.join(map(str, ticked_boxes))))
-        data = r.json()['datatable']['data']
-        sys.stderr.write("DATA"+str(data))
-        if len(data)==0:
+        if not isStockTickerValid(stock_name):
             return render_template('index.html',error='Stock data for the given dates not found. Please check the spelling of the stock ticker. If it is correct, it means no data exists for the past month.')
         (div,script)=getPlot(stock_name, ticked_boxes)
         return render_template('graph.html',stock_name=stock_name,div=div,script=script)
@@ -50,7 +38,16 @@ def index():
 
     return render_template('index.html')
 
-
+def isStockTickerValid(stock_name):
+    today = datetime.date.today()
+    first = today.replace(day=1)
+    lastMonthEnd = first - datetime.timedelta(days=1)
+    lastMonthStart = lastMonthEnd.replace(day=1)
+    r = requests.get(
+        "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=%s&date.gte=%s&date.lte=%s&qopts.columns=date,open&api_key=yFrECJyVKjZh4z--h7xq" % (
+            stock_name, lastMonthStart.strftime("%y%m%d"), lastMonthEnd.strftime("%y%m%d")))
+    data = r.json()['datatable']['data']
+    return len(data)!=0
 
 def getPlot(stock_name,ticked_boxes):
     #lookup stock name; if not found, go to error page
@@ -84,10 +81,8 @@ def getPlot(stock_name,ticked_boxes):
 
         inc = pddata.close > pddata.open
         dec = pddata.open > pddata.close
-        w = 12 * 60 * 60 * 1000  # half day in ms
+        w = 12 * 60 * 60 * 1000
 
-        #p = figure(x_axis_type="datetime", plot_width=800, plot_height=500, title=" Candlestick")
-        #p.xaxis.major_label_orientation = pi / 4
         p.grid.grid_line_alpha = 0.3
 
         p.segment(pddata.index, pddata.high, pddata.index, pddata.low, color='black')
@@ -108,6 +103,15 @@ def getPlot(stock_name,ticked_boxes):
         p.circle(pddata.index, pddata[feature], line_color=colors[index],fill_color=colors[index],size=5)
     script, div=components(p)
     return (div,script)
+
+@app.route('/candlestick/<stock_name>')
+def candlestick(stock_name):
+    stock_name=stock_name.upper()
+    if not isStockTickerValid(stock_name):
+        return redirect('/index')
+    div,script=getPlot(stock_name,["low","high","close","open"])
+    return render_template('graph.html', stock_name=stock_name, div=div, script=script)
+
 
 if __name__ == '__main__':
   app.run(port=33507,debug=True)
